@@ -27,7 +27,13 @@ installed: the bundled one appears as **Wallhaven**, this one as
   the wallpapers of a public collection. With an API key you can also open your
   own private collections.
 - **API key login** for NSFW results and private collections.
-- **Filters**: purity, topics (any/all), and exact resolution.
+- **Filters**:
+  - **Categories**: General, Anime, People.
+  - **People topics**: Celebrities, Models, Cosplay.
+  - **Purity**: Safe for work, Suggestive (Sketchy), Explicit (NSFW).
+  - Topics (any/all) and exact resolution.
+- **Suggestive (Sketchy) works without an API key.** Only explicit NSFW and
+  private collections require one.
 
 ## Requirements
 
@@ -100,7 +106,8 @@ API key from your Wallhaven account settings. Do **not** enter your password.
   to fetch the next pages.
 - The plugin opens on **Recent** (every new upload). Switch to **Trending
   (1 month)** or the Top 3/6/12-month modes for the popular stuff.
-- NSFW results require an API key. Without one, only SFW results are returned.
+- Explicit NSFW results require an API key. Suggestive (Sketchy) results work
+  without one; without a key, only SFW and Sketchy can be shown.
 - The plugin talks directly to `https://wallhaven.cc/api/v1` and follows the
   public API rate limit (45 requests/minute).
 

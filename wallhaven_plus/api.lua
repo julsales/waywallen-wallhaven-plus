@@ -35,7 +35,9 @@ local QUERY_TAGS = {
     Animal = "animal",
     Anime = "anime",
     Cartoon = "cartoon",
+    Celebrities = "celebrity",
     CG = "cg",
+    Cosplay = "cosplay",
     Cyberpunk = "cyberpunk",
     Fantasy = "fantasy",
     Game = "game",
@@ -45,6 +47,7 @@ local QUERY_TAGS = {
     Medieval = "medieval",
     Memes = "meme",
     MMD = "mmd",
+    Models = "model",
     Music = "music",
     Nature = "nature",
     ["Pixel art"] = "pixel art",
@@ -58,14 +61,24 @@ local QUERY_TAGS = {
 
 M.filters = {
     {
+        id = "categories",
+        title = "Categories",
+        type = "multi_select",
+        options = {
+            { value = "cat_general", label = "General" },
+            { value = "cat_anime", label = "Anime" },
+            { value = "cat_people", label = "People" },
+        },
+    },
+    {
         id = "purity",
         title = "Purity",
         type = "multi_select",
-        description = "NSFW wallpapers require a Wallhaven API key.",
+        description = "Sketchy is suggestive; NSFW is explicit and requires a Wallhaven API key.",
         options = {
             { value = "SFW", label = "Safe for work" },
-            { value = "Sketchy", label = "Questionable" },
-            { value = "NSFW", label = "Not safe for work" },
+            { value = "Sketchy", label = "Suggestive (Sketchy)" },
+            { value = "NSFW", label = "Explicit (NSFW)" },
         },
     },
     {
@@ -79,7 +92,9 @@ M.filters = {
             { value = "Animal", label = "Animal" },
             { value = "Anime", label = "Anime" },
             { value = "Cartoon", label = "Cartoon" },
+            { value = "Celebrities", label = "Celebrities" },
             { value = "CG", label = "CG" },
+            { value = "Cosplay", label = "Cosplay" },
             { value = "Cyberpunk", label = "Cyberpunk" },
             { value = "Fantasy", label = "Fantasy" },
             { value = "Game", label = "Game" },
@@ -89,6 +104,7 @@ M.filters = {
             { value = "Medieval", label = "Medieval" },
             { value = "Memes", label = "Memes" },
             { value = "MMD", label = "MMD" },
+            { value = "Models", label = "Models" },
             { value = "Music", label = "Music" },
             { value = "Nature", label = "Nature" },
             { value = "Pixel art", label = "Pixel art" },
@@ -212,25 +228,40 @@ function M.search(ctx, params)
 
     local sort = SORTS[params.sort] or SORTS.recent
     local resolutions = {}
-    local general, anime, people = true, true, true
+    local general, anime, people = false, false, false
     local category_selected = false
     local topic_mode = match_modes.topics
     local topics = {}
 
+    -- Explicit category filter (General / Anime / People).
+    for _, tag in ipairs(tags) do
+        if tag == "cat_general" then
+            general = true
+            category_selected = true
+        elseif tag == "cat_anime" then
+            anime = true
+            category_selected = true
+        elseif tag == "cat_people" then
+            people = true
+            category_selected = true
+        end
+    end
+    if not category_selected then
+        general, anime, people = true, true, true
+    end
+
     for _, tag in ipairs(tags) do
         if tag == "SFW" or tag == "Sketchy" or tag == "NSFW" then
             -- Purity is handled above.
-        elseif not topic_mode and tag == "Anime" then
-            if not category_selected then
-                general, anime, people = false, false, false
-                category_selected = true
-            end
+        elseif tag == "cat_general" or tag == "cat_anime" or tag == "cat_people" then
+            -- Categories are handled above.
+        elseif not category_selected and not topic_mode and tag == "Anime" then
+            general, anime, people = false, false, false
+            category_selected = true
             anime = true
-        elseif not topic_mode and (tag == "Girls" or tag == "Guys") then
-            if not category_selected then
-                general, anime, people = false, false, false
-                category_selected = true
-            end
+        elseif not category_selected and not topic_mode and (tag == "Girls" or tag == "Guys") then
+            general, anime, people = false, false, false
+            category_selected = true
             people = true
         end
 
