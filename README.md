@@ -38,14 +38,16 @@ A Wallhaven account is only needed for NSFW results and private collections.
 
 ### From the ZIP
 
-Run:
+Download the latest `org.julia.wallhaven-plus-<version>.zip` from the
+[Releases](https://github.com/julsales/waywallen-wallhaven-plus/releases) page,
+or build it locally:
 
 ```bash
 ./scripts/build.sh
 ```
 
 Then open Waywallen, go to **Plugins**, choose **Install from ZIP**, and pick
-`dist/org.julia.wallhaven-plus-0.1.0.zip`.
+the ZIP.
 
 ### From the repository
 
