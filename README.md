@@ -50,13 +50,13 @@ Then open Waywallen → **Plugins** → **Install from ZIP** and choose
 Copy (or symlink) this directory into the user plugin directory:
 
 ```bash
-mkdir -p ~/.local/share/waywallen/plugins
-ln -sfn "$PWD" ~/.local/share/waywallen/plugins/org.julia.wallhaven-plus
+mkdir -p ~/.local/share/waywallen/plugins/org.julia.wallhaven-plus
+cp -a plugin.toml main.lua files.txt wallhaven_plus \
+  ~/.local/share/waywallen/plugins/org.julia.wallhaven-plus/
 systemctl --user restart app-org.waywallen.waywallen@autostart.service
 ```
 
-Reopen the UI from the tray or with `waywallen --new-window`? No — use the
-Waywallen tray icon, or ask the daemon:
+Reopen the UI from the tray icon, or ask the daemon:
 
 ```bash
 gdbus call --session \
