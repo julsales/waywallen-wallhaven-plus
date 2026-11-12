@@ -87,9 +87,9 @@ scripts/build.sh     packaging
 ./scripts/build.sh
 ```
 
-The ZIP is written to `dist/`. Install it through **Plugins → Install from
-ZIP** and confirm the plugin still loads. `files.txt` drives the package
-contents, so add any new runtime file there.
+The ZIP is written to `dist/`. In Waywallen, open **Plugins**, choose
+**Install from ZIP**, and confirm the plugin still loads. `files.txt` drives
+the package contents, so add any new runtime file there.
 
 ## Pull requests
 
