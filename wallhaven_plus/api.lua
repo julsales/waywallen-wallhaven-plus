@@ -210,7 +210,7 @@ function M.search(ctx, params)
         })
     end
 
-    local sort = SORTS[params.sort] or SORTS.trend
+    local sort = SORTS[params.sort] or SORTS.recent
     local resolutions = {}
     local general, anime, people = true, true, true
     local category_selected = false

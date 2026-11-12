@@ -98,8 +98,8 @@ API key from your Wallhaven account settings. Do **not** enter your password.
 
 - Wallhaven returns **24 items per page**. Keep scrolling (or use "load more")
   to fetch the next pages.
-- The default sort is **Trending (1 month)**, which is the top of the last
-  month — not the whole site. Use **Recent** to see every new upload.
+- The plugin opens on **Recent** (every new upload). Switch to **Trending
+  (1 month)** or the Top 3/6/12-month modes for the popular stuff.
 - NSFW results require an API key. Without one, only SFW results are returned.
 - The plugin talks directly to `https://wallhaven.cc/api/v1` and follows the
   public API rate limit (45 requests/minute).

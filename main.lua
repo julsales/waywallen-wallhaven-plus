@@ -56,11 +56,11 @@ function M.info()
                 details = true,
                 download = true,
                 sorts = {
+                    { key = "recent", label = "Recent" },
                     { key = "trend", label = "Trending (1 month)" },
                     { key = "top3m", label = "Top 3 months" },
                     { key = "top6m", label = "Top 6 months" },
                     { key = "top1y", label = "Top 1 year" },
-                    { key = "recent", label = "Recent" },
                     { key = "views", label = "Most viewed" },
                     { key = "popular", label = "Most favorited" },
                     { key = "hot", label = "Hot" },
