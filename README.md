@@ -1,68 +1,64 @@
 # Wallhaven Plus for Waywallen
 
-A third-party [Waywallen](https://github.com/waywallen/waywallen) source plugin
-that brings more of the Wallhaven API into the Discover view.
+Wallhaven Plus is an unofficial source plugin for
+[Waywallen](https://github.com/waywallen/waywallen). It adds a second Wallhaven
+source to Discover with more sort options, category filters, and collection
+browsing. The bundled Wallhaven plugin stays untouched, so you can keep both
+installed and switch between them.
 
-It is a drop-in alternative to the bundled Wallhaven plugin. You can keep both
-installed: the bundled one appears as **Wallhaven**, this one as
-**Wallhaven Plus**.
+## What it adds
 
-## Features
+Sort modes: Recent (the default), Trending for the last month, Top 3 months,
+Top 6 months, Top 1 year, Most viewed, Most favorited, Hot, and Random. Random
+keeps the same ordering while you page through results.
 
-- **More sort modes**
-  - Trending (top of the last month)
-  - Top 3 months / 6 months / 1 year
-  - Recent (latest uploads)
-  - Most viewed
-  - Most favorited
-  - Hot
-  - Random (with a stable seed across pages)
-- **Full Wallhaven search syntax** in the search box:
-  - `+tag` / `-tag`
-  - `@username`
-  - `id:123`
-  - `type:jpg`
-  - `like:<wallpaper id>`
-- **Collections**: type `collection:<username>/<id>` in the search box to browse
-  the wallpapers of a public collection. With an API key you can also open your
-  own private collections.
-- **API key login** for NSFW results and private collections.
-- **Filters**:
-  - **Categories**: General, Anime, People.
-  - **People topics**: Celebrities, Models, Cosplay.
-  - **Purity**: Safe for work, Suggestive (Sketchy), Explicit (NSFW).
-  - Topics (any/all) and exact resolution.
-- **Suggestive (Sketchy) works without an API key.** Only explicit NSFW and
-  private collections require one.
+The search box accepts Wallhaven's query syntax: `+tag`, `-tag`, `@username`,
+`id:123`, `type:jpg`, and `like:<wallpaper id>`.
+
+Filters:
+
+- Categories: General, Anime, People.
+- Purity: Safe for work, Suggestive (Sketchy), Explicit (NSFW).
+- Topics, including Celebrities, Models, and Cosplay.
+- Exact resolution.
+
+Collections: type `collection:<username>/<id>` in the search box to open a
+public collection. With an API key you can open your own private collections.
+
+Suggestive (Sketchy) results work without a key. Explicit NSFW results and
+private collections need a Wallhaven API key.
 
 ## Requirements
 
-- Waywallen **0.6.0 or newer** (plugin `entry_version = 4`).
-- A Wallhaven account only if you want NSFW results or private collections.
+Waywallen 0.6.0 or newer. The plugin uses `entry_version = 4`.
+
+A Wallhaven account is only needed for NSFW results and private collections.
 
 ## Install
 
-### From a ZIP
+### From the ZIP
+
+Run:
 
 ```bash
 ./scripts/build.sh
 ```
 
-Then open Waywallen → **Plugins** → **Install from ZIP** and choose
+Then open Waywallen, go to **Plugins**, choose **Install from ZIP**, and pick
 `dist/org.julia.wallhaven-plus-0.1.0.zip`.
 
-### Development copy
+### From the repository
 
-Copy (or symlink) this directory into the user plugin directory:
+Copy the plugin into the user plugin directory:
 
 ```bash
 mkdir -p ~/.local/share/waywallen/plugins/org.julia.wallhaven-plus
-cp -a plugin.toml main.lua files.txt wallhaven_plus \
+cp -a plugin.toml main.lua files.txt LICENSE wallhaven_plus \
   ~/.local/share/waywallen/plugins/org.julia.wallhaven-plus/
 systemctl --user restart app-org.waywallen.waywallen@autostart.service
 ```
 
-Reopen the UI from the tray icon, or ask the daemon:
+Then reopen the UI from the tray icon, or run:
 
 ```bash
 gdbus call --session \
@@ -71,73 +67,74 @@ gdbus call --session \
   --method org.waywallen.waywallen.Daemon1.OpenUi
 ```
 
-## Usage
+## Use
 
-1. Open **Discover** and select **Wallhaven Plus** as the source.
-2. Pick a sort mode and (optionally) filters.
-3. Type a query, or use the Wallhaven syntax. Leave it empty for a general
-   listing.
-4. Open an item to see details, download it, and apply it.
+Open **Discover**, select **Wallhaven Plus**, then pick a sort and any filters.
+The search box works with an empty query or with Wallhaven syntax.
 
-### Collections
-
-Wallhaven collection URLs look like:
+For collections, open the collection on Wallhaven and copy the username and
+numeric id from the URL:
 
 ```
 https://wallhaven.cc/user/<username>/collections/<id>
 ```
 
-Use the same username and numeric id in the search box:
+Then search for:
 
 ```
 collection:<username>/<id>
 ```
 
-For private collections, add your API key in the plugin settings first.
-
-### API key
-
-Waywallen → Plugins → **Wallhaven Plus** → **Log in to Wallhaven**. Paste the
-API key from your Wallhaven account settings. Do **not** enter your password.
+To use an API key, open **Plugins**, select **Wallhaven Plus**, and choose
+**Log in to Wallhaven**. Paste the API key from your Wallhaven account settings.
+Do not enter your password.
 
 ## Notes
 
-- Wallhaven returns **24 items per page**. Keep scrolling (or use "load more")
-  to fetch the next pages.
-- The plugin opens on **Recent** (every new upload). Switch to **Trending
-  (1 month)** or the Top 3/6/12-month modes for the popular stuff.
-- Explicit NSFW results require an API key. Suggestive (Sketchy) results work
-  without one; without a key, only SFW and Sketchy can be shown.
-- The plugin talks directly to `https://wallhaven.cc/api/v1` and follows the
-  public API rate limit (45 requests/minute).
+Wallhaven returns 24 items per page. Scroll to the end to load more.
+
+The plugin opens on Recent. Switch to Trending or one of the Top modes to see
+popular wallpapers instead of new ones.
+
+Explicit NSFW results need an API key. Suggestive results do not. Without a key,
+the plugin can show SFW and Sketchy wallpapers.
+
+Wallhaven limits API calls to 45 per minute. The plugin does not retry on its
+own. If you hit the limit, wait a minute and search again.
 
 ## Security
 
-Third-party Waywallen plugins run Lua inside the daemon with your user account's
-privileges. They can read and write files and access the network. Review the
-code before installing, and only install plugins you trust.
+Waywallen plugins run Lua inside the daemon with your user account's
+permissions. They can read and write files and use the network. Read the code
+before installing a third-party plugin.
 
-This plugin only performs HTTP requests to `wallhaven.cc` and stores the API key
-through Waywallen's own plugin lifecycle storage. It does not read or write
-unrelated files.
+This plugin calls the Wallhaven API at `wallhaven.cc`; Waywallen downloads the
+wallpaper files from the URLs the API returns. The API key is kept in
+Waywallen's plugin lifecycle storage, not in this repository. When you delete a
+downloaded wallpaper, the plugin removes that file and its metadata JSON.
+
+This project is not affiliated with Waywallen or Wallhaven.
 
 ## Development
 
-The plugin is plain Lua. There is no build step for the source itself; the build
-script only packages the ZIP understood by the Waywallen plugin installer.
+The source is plain Lua. `scripts/build.sh` packages the files listed in
+`files.txt` into the ZIP that the plugin installer expects.
 
 ```
 plugin.toml          manifest (id, entry, entry_version)
 main.lua             plugin info, actions, lifecycle wiring
 wallhaven_plus/      API client, mapping, discover/source/wallpaper modules
-files.txt            file list used by the installer
-scripts/build.sh     packages dist/org.julia.wallhaven-plus-<version>.zip
+files.txt            files included in the package
+scripts/build.sh     builds dist/org.julia.wallhaven-plus-<version>.zip
 ```
 
-Useful references:
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local testing and pull request
+notes.
 
-- Waywallen plugin system: <https://github.com/waywallen/waywallen>
-- Official Wallhaven plugin: `plugins/org.waywallen.wallhaven`
+References:
+
+- Waywallen: <https://github.com/waywallen/waywallen>
+- Bundled Wallhaven plugin: `plugins/org.waywallen.wallhaven`
 - Wallhaven API: <https://wallhaven.cc/help/api>
 
 ## License
