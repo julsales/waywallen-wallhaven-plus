@@ -1,4 +1,4 @@
-# Wallhaven Plus for Waywallen
+# Wallhaven Plus Plugin for Waywallen
 
 Wallhaven Plus is an unofficial source plugin for
 [Waywallen](https://github.com/waywallen/waywallen). It adds a second Wallhaven
