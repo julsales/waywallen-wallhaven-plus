@@ -1,0 +1,6 @@
+[plugin]
+id = "org.julia.wallhaven-plus"
+name = "Wallhaven Plus"
+version = "0.1.0"
+entry = "main.lua"
+entry_version = 4

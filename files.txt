@@ -1,0 +1,8 @@
+main.lua
+plugin.toml
+wallhaven_plus/api.lua
+wallhaven_plus/discover.lua
+wallhaven_plus/map.lua
+wallhaven_plus/session.lua
+wallhaven_plus/source.lua
+wallhaven_plus/wallpaper.lua
