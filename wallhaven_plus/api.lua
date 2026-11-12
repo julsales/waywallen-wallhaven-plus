@@ -153,12 +153,26 @@ local function request_json(ctx, url, query)
         :query(query)
         :timeout(20)
         :send()
-    if rsp:status() == 401 or rsp:status() == 403 then
+    local status = rsp:status()
+    if status == 401 then
+        local had_key = session.authenticated()
         session.sign_out()
-        error("Wallhaven API key was rejected; log in again")
+        if had_key then
+            error("Wallhaven API key was rejected; log in again")
+        end
+        error("Wallhaven requires an API key for this request")
+    end
+    if status == 403 then
+        -- 403 is authorization (private collection, WAF, etc.), not proof
+        -- that the stored key is invalid. Clearing it would log the user out
+        -- for a collection they simply cannot access.
+        error("Wallhaven denied the request (HTTP 403)")
+    end
+    if status == 429 then
+        error("Wallhaven rate limit reached; try again in a minute")
     end
     if not rsp:ok() then
-        error("wallhaven http " .. tostring(rsp:status()))
+        error("wallhaven http " .. tostring(status))
     end
     return rsp:json()
 end
@@ -189,7 +203,15 @@ end
 
 local random_state = { key = nil, seed = nil }
 
-local function make_seed()
+local function make_seed(ctx)
+    -- Prefer the host CSPRNG. os.time alone gives every search in the same
+    -- second the same ordering.
+    if ctx and type(ctx.random) == "table" and type(ctx.random.hex) == "function" then
+        local ok, value = pcall(ctx.random.hex, 3)
+        if ok and type(value) == "string" and #value == 6 and value:match("^[%w]+$") then
+            return value
+        end
+    end
     local ok, value = pcall(function()
         return os and os.time and os.time() or nil
     end)
@@ -199,26 +221,55 @@ local function make_seed()
     return "wwplus"
 end
 
-local function random_seed(params)
-    local tags = params.tags or {}
-    local key = table.concat({ params.query or "", params.sort or "", table.concat(tags, ",") }, "|")
+local function random_seed(ctx, params)
+    local tags = type(params.tags) == "table" and params.tags or {}
+    local modes = type(params.filter_match_modes) == "table" and params.filter_match_modes or {}
+    local sorted = {}
+    for i, tag in ipairs(tags) do
+        sorted[i] = tostring(tag)
+    end
+    table.sort(sorted)
+    local key = table.concat({
+        type(params.query) == "string" and params.query or "",
+        tostring(params.sort or ""),
+        table.concat(sorted, ","),
+        tostring(modes.topics or ""),
+    }, "|")
     if random_state.key ~= key then
         random_state.key = key
-        random_state.seed = make_seed()
+        random_state.seed = make_seed(ctx)
     end
     return random_state.seed
 end
 
+-- Usernames and ids are URL path segments. Keep them to safe characters and
+-- reject "." / ".." so URL normalization cannot rewrite the request onto a
+-- different API path.
+local function collection_target(query)
+    local username, collection_id =
+        query:match("^%s*collection:([%w_%-%.]+)/(%d+)%s*$")
+    if not username or username == "." or username == ".." then
+        return nil
+    end
+    if #username > 64 or #collection_id > 32 then
+        return nil
+    end
+    return username, collection_id
+end
+
 function M.search(ctx, params)
-    params = params or {}
-    local query = params.query or ""
-    local tags = params.tags or {}
-    local match_modes = params.filter_match_modes or {}
+    if type(params) ~= "table" then
+        params = {}
+    end
+    local query = type(params.query) == "string" and params.query or ""
+    local tags = type(params.tags) == "table" and params.tags or {}
+    local match_modes = type(params.filter_match_modes) == "table" and params.filter_match_modes or {}
     local purity = purity_string(tags)
 
     -- Power-user collection browsing:
     --   collection:<username>/<collection id>
-    local username, collection_id = query:match("^%s*collection:([%w_%-%.]+)/(%d+)%s*$")
+    -- The collection endpoint accepts only page and purity.
+    local username, collection_id = collection_target(query)
     if username then
         return request_json(ctx, API .. "/collections/" .. username .. "/" .. collection_id, {
             page = tostring(params.page or 1),
@@ -246,6 +297,7 @@ function M.search(ctx, params)
             category_selected = true
         end
     end
+    local explicit_categories = category_selected
     if not category_selected then
         general, anime, people = true, true, true
     end
@@ -255,13 +307,17 @@ function M.search(ctx, params)
             -- Purity is handled above.
         elseif tag == "cat_general" or tag == "cat_anime" or tag == "cat_people" then
             -- Categories are handled above.
-        elseif not category_selected and not topic_mode and tag == "Anime" then
-            general, anime, people = false, false, false
-            category_selected = true
+        elseif not explicit_categories and not topic_mode and tag == "Anime" then
+            if not category_selected then
+                general, anime, people = false, false, false
+                category_selected = true
+            end
             anime = true
-        elseif not category_selected and not topic_mode and (tag == "Girls" or tag == "Guys") then
-            general, anime, people = false, false, false
-            category_selected = true
+        elseif not explicit_categories and not topic_mode and (tag == "Girls" or tag == "Guys") then
+            if not category_selected then
+                general, anime, people = false, false, false
+                category_selected = true
+            end
             people = true
         end
 
@@ -304,14 +360,24 @@ function M.search(ctx, params)
         q.resolutions = table.concat(resolutions, ",")
     end
     if sort.sorting == "random" then
-        q.seed = random_seed(params)
+        q.seed = random_seed(ctx, params)
     end
 
     return request_json(ctx, API .. "/search", q)
 end
 
+-- Wallhaven ids are alphanumeric. Rejecting other characters keeps the id
+-- from becoming a path/query fragment in the API URL.
+local function wallpaper_id(value)
+    local id = tostring(value or "")
+    if not id:match("^[%w]+$") then
+        error("invalid Wallhaven wallpaper id")
+    end
+    return id
+end
+
 function M.wallpaper(ctx, id)
-    local payload = request_json(ctx, API .. "/w/" .. tostring(id), {})
+    local payload = request_json(ctx, API .. "/w/" .. wallpaper_id(id), {}) or {}
     return payload.data or {}
 end
 

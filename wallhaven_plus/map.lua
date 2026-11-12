@@ -1,7 +1,22 @@
 local M = {}
 
 local function file_ext(path)
-    return string.lower(path:match("%.([^./?#]+)$") or "jpg")
+    if type(path) ~= "string" then
+        return "jpg"
+    end
+    local ext = string.lower(path:match("%.([%w]+)$") or "")
+    if ext == "jpg" or ext == "jpeg" or ext == "png" or ext == "webp" then
+        return ext
+    end
+    return "jpg"
+end
+
+local function safe_id(value)
+    local id = tostring(value or ""):gsub("[^%w_-]", "_")
+    if id == "" then
+        return "wallpaper"
+    end
+    return id:sub(1, 64)
 end
 
 local function tags_from_detail(detail)
@@ -21,7 +36,11 @@ local function rating(purity)
     if purity == "sketchy" then
         return "Questionable"
     end
-    return "Everyone"
+    if purity == "sfw" then
+        return "Everyone"
+    end
+    -- An unknown/missing rating must not be treated as safe for work.
+    return "Mature"
 end
 
 local function uploader_name(detail)
@@ -91,7 +110,7 @@ function M.download(detail)
     return {
         wp_type = "image",
         url = detail.path or "",
-        filename = "wallhaven-" .. tostring(detail.id or "wallpaper") .. "." .. ext,
+        filename = "wallhaven-" .. safe_id(detail.id) .. "." .. ext,
         title = title(detail),
         preview_url = thumbs.original or thumbs.large or thumbs.small or "",
         description = detail.source or detail.url or "",

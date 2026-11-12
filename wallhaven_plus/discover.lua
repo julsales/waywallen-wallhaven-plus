@@ -4,7 +4,7 @@ local map = import("wallhaven_plus.map")
 local M = {}
 
 function M.search(ctx, params)
-    local payload = api.search(ctx, params)
+    local payload = api.search(ctx, params) or {}
     local items = {}
     for _, item in ipairs(payload.data or {}) do
         table.insert(items, map.search_item(item))

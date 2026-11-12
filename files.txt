@@ -1,3 +1,4 @@
+LICENSE
 main.lua
 plugin.toml
 wallhaven_plus/api.lua
